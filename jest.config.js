@@ -2,7 +2,16 @@ module.exports = {
   preset: '@react-native/jest-preset',
   setupFilesAfterEnv: ['./__tests__/jest-setup.ts'],
   transformIgnorePatterns: [
-    'node_modules/(?!((jest-)?react-native|@react-native(-community)?|@testing-library/react-native|test-renderer|react-native-ai-kit|react-native-localize)/)',
+    'node_modules/(?!(' +
+      '(jest-)?react-native' +
+      '|@react-native(-community)?' +
+      '|@react-navigation' +
+      '|@testing-library/react-native' +
+      '|react-native-screens' +
+      '|react-native-safe-area-context' +
+      '|react-native-localize' +
+      '|test-renderer' +
+      ')/)',
   ],
   testMatch: ['**/__tests__/**/*.(test|spec).(ts|tsx|js)'],
   moduleNameMapper: {

@@ -51,6 +51,8 @@ export default {
   },
   errors: {
     nameRequired: 'Введите имя',
+    nameTooShort: 'Имя слишком короткое',
+    ageInvalid: 'Введите корректный возраст',
     eventRequired: 'Выберите событие',
     networkError: 'Нет соединения',
     aiError: 'Не удалось сгенерировать. Попробуйте ещё раз',

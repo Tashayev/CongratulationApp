@@ -20,6 +20,7 @@ export const Button: React.FC<IButtonProps> = ({
   loading = false,
   disabled,
   style,
+  testID = 'app-button',
   ...rest
 }) => {
   const isPrimary = variant === 'primary';
@@ -27,7 +28,7 @@ export const Button: React.FC<IButtonProps> = ({
 
   return (
     <Pressable
-      testID="app-button"
+      testID={testID}
       disabled={isDisabled}
       style={({ pressed }) => [
         styles.base,

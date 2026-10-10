@@ -1,10 +1,5 @@
 import React from 'react';
-import {
-  StyleSheet,
-  TextInput,
-  View,
-  type TextInputProps,
-} from 'react-native';
+import { StyleSheet, TextInput, View, type TextInputProps } from 'react-native';
 import { AppText } from './AppText';
 import { colors, radius, spacing } from '../lib/theme';
 
@@ -13,15 +8,25 @@ interface IInputProps extends TextInputProps {
   error?: string;
 }
 
-export const Input: React.FC<IInputProps> = ({ label, error, style, ...rest }) => (
+export const Input: React.FC<IInputProps> = ({
+  label,
+  error,
+  style,
+  testID = 'app-input',
+  ...rest
+}) => (
   <View style={styles.wrapper}>
     {label ? (
-      <AppText variant="caption" color={colors.textSecondary} style={styles.label}>
+      <AppText
+        variant="caption"
+        color={colors.textSecondary}
+        style={styles.label}
+      >
         {label}
       </AppText>
     ) : null}
     <TextInput
-      testID="app-input"
+      testID={testID}
       placeholderTextColor={colors.textSecondary}
       style={[styles.input, !!error && styles.inputError, style]}
       {...rest}

@@ -51,6 +51,8 @@ export default {
   },
   errors: {
     nameRequired: 'Атын енгізіңіз',
+    nameTooShort: 'Аты тым қысқа',
+    ageInvalid: 'Жасты дұрыс енгізіңіз',
     eventRequired: 'Оқиғаны таңдаңыз',
     networkError: 'Байланыс жоқ',
     aiError: 'Жасау мүмкін болмады. Қайталап көріңіз',

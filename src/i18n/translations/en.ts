@@ -51,8 +51,10 @@ export default {
   },
   errors: {
     nameRequired: 'Please enter a name',
-    eventRequired: 'Please select an event',
-    networkError: 'No connection',
-    aiError: 'Failed to generate. Please try again',
+  nameTooShort: 'Name is too short',
+  ageInvalid: 'Please enter a valid age',
+  eventRequired: 'Please select an event',
+  networkError: 'No connection',
+  aiError: 'Failed to generate. Please try again',
   },
 } as const;

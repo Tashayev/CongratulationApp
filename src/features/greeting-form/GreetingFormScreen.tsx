@@ -3,13 +3,13 @@ import { View, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Screen, AppText, Button, Input } from '@shared/ui';
+import { Screen, AppText, Button, Input, LanguageSwitcher } from '@shared/ui';
 import { spacing } from '@shared/lib/theme';
 import type { TRootStackParamList } from '@app/navigation/types';
 import { OptionSelector } from './components/OptionSelector';
 import { SwitchRow } from './components/SwitchRow';
 import { useGreetingForm } from './hooks/useGreetingForm';
-import type { TEventType, TRelationType, TGender } from './types';
+import type { TEventType, TGender } from './types';
 
 type TNav = NativeStackNavigationProp<TRootStackParamList, 'GreetingForm'>;
 
@@ -35,23 +35,13 @@ export const GreetingFormScreen: React.FC = () => {
     ] as TEventType[]
   ).map(value => ({ value, label: t(`form.events.${value}`) }));
 
-  const relationOptions = (
-    [
-      'friend',
-      'colleague',
-      'family',
-      'relative',
-      'boss',
-      'other',
-    ] as TRelationType[]
-  ).map(value => ({ value, label: t(`form.relations.${value}`) }));
-
   const genderOptions = (['male', 'female', 'unspecified'] as TGender[]).map(
     value => ({ value, label: t(`form.genders.${value}`) }),
   );
 
   return (
     <Screen scrollable>
+      <LanguageSwitcher />
       <AppText variant="h1" style={styles.title}>
         {t('form.title')}
       </AppText>
@@ -65,6 +55,17 @@ export const GreetingFormScreen: React.FC = () => {
         testID="event-selector"
       />
 
+      {data.event === 'other' ? (
+        <Input
+          label={t('form.eventCustomLabel')}
+          placeholder={t('form.eventCustomPlaceholder')}
+          value={data.eventCustom}
+          onChangeText={v => setField('eventCustom', v)}
+          error={errors.eventCustom}
+          testID="event-custom-input"
+        />
+      ) : null}
+
       <Input
         label={t('form.recipientName')}
         placeholder={t('form.recipientNamePlaceholder')}
@@ -74,12 +75,13 @@ export const GreetingFormScreen: React.FC = () => {
         testID="name-input"
       />
 
-      <OptionSelector
+      <Input
         label={t('form.relationLabel')}
-        options={relationOptions}
+        placeholder={t('form.relationPlaceholder')}
         value={data.relation}
-        onChange={v => setField('relation', v)}
-        testID="relation-selector"
+        onChangeText={v => setField('relation', v)}
+        error={errors.relation}
+        testID="relation-input"
       />
 
       <Input

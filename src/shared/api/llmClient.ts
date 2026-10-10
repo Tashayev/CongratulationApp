@@ -1,10 +1,8 @@
+// src/shared/api/llmClient.ts
+import { fetch as streamingFetch } from 'react-native-fetch-api';
 import { ENV } from '@shared/config/env';
-import { LLMError, type ILLMClient } from './types';
+import { LLMError, type ILLMClient, type IStreamChunk } from './types';
 
-/**
- * Парсит одну SSE-строку от Groq.
- * Извлекает только `delta.content` (reasoning-токены игнорируются).
- */
 const parseSSELine = (line: string): string | null => {
   const trimmed = line.trim();
   if (!trimmed.startsWith('data:')) return null;
@@ -20,8 +18,74 @@ const parseSSELine = (line: string): string | null => {
   }
 };
 
+/**
+ * Потоковое чтение — работает, если react-native-fetch-api отдал ReadableStream.
+ */
+const readAsStream = async (
+  response: Response,
+  onChunk: (chunk: IStreamChunk) => void,
+): Promise<string> => {
+  const reader = response.body!.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  let accumulated = '';
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop() ?? '';
+
+    for (const line of lines) {
+      const text = parseSSELine(line);
+      if (text) {
+        accumulated += text;
+        onChunk({ text, done: false });
+      }
+    }
+  }
+
+  // Обработка остатка буфера
+  if (buffer.trim()) {
+    const text = parseSSELine(buffer);
+    if (text) {
+      accumulated += text;
+      onChunk({ text, done: false });
+    }
+  }
+
+  onChunk({ text: '', done: true });
+  return accumulated;
+};
+
+/**
+ * Fallback — если стриминг недоступен, ждём полный ответ и парсим SSE из строки.
+ * Текст появится одним блоком, но всё работает.
+ */
+const readAsText = async (
+  response: Response,
+  onChunk: (chunk: IStreamChunk) => void,
+): Promise<string> => {
+  const fullText = await response.text();
+  const lines = fullText.split('\n');
+  let accumulated = '';
+
+  for (const line of lines) {
+    const text = parseSSELine(line);
+    if (text) {
+      accumulated += text;
+      onChunk({ text, done: false });
+    }
+  }
+
+  onChunk({ text: '', done: true });
+  return accumulated;
+};
+
 export const llmClient: ILLMClient = {
-  async streamGreeting(prompt, onChunk, signal) {
+  async streamGreeting(prompt, systemPrompt, onChunk, signal) {
     const timeoutController = new AbortController();
     const timeoutId = setTimeout(
       () => timeoutController.abort(),
@@ -34,17 +98,16 @@ export const llmClient: ILLMClient = {
 
     let response: Response;
     try {
-      response = await fetch(`${ENV.API_BASE_URL}/api/generate`, {
+      response = await streamingFetch(`${ENV.API_BASE_URL}/api/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt }),
+        body: JSON.stringify({ prompt, systemPrompt }),
         signal: combinedSignal,
-      });
+        reactNative: { textStreaming: true },
+      } as RequestInit);
     } catch (err) {
       clearTimeout(timeoutId);
-      if (err instanceof Error && err.name === 'AbortError') {
-        throw err;
-      }
+      if (err instanceof Error && err.name === 'AbortError') throw err;
       throw new LLMError(
         err instanceof Error ? err.message : 'Network request failed',
       );
@@ -55,36 +118,13 @@ export const llmClient: ILLMClient = {
       throw new LLMError(`HTTP ${response.status}`, response.status);
     }
 
-    if (!response.body) {
-      clearTimeout(timeoutId);
-      throw new LLMError('Response body is empty');
-    }
-
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = '';
-    let accumulated = '';
-
     try {
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        buffer = lines.pop() ?? '';
-
-        for (const line of lines) {
-          const text = parseSSELine(line);
-          if (text) {
-            accumulated += text;
-            onChunk({ text, done: false });
-          }
-        }
+      // Если есть ReadableStream — используем стриминг,
+      // иначе — читаем как текст и парсим SSE построчно.
+      if (response.body && typeof response.body.getReader === 'function') {
+        return await readAsStream(response, onChunk);
       }
-
-      onChunk({ text: '', done: true });
-      return accumulated;
+      return await readAsText(response, onChunk);
     } finally {
       clearTimeout(timeoutId);
     }

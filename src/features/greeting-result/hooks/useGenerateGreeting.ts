@@ -1,8 +1,13 @@
 import { useCallback, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { llmClient } from '@shared/api/llmClient';
-import { LLMError } from '@shared/api/types';
 import type { IGreetingFormData } from '@features/greeting-form/types';
-import { buildPrompt } from '@features/greeting-form/lib/buildPrompt';
+import {
+  buildPrompt,
+  getSystemPrompt,
+} from '@features/greeting-form/lib/buildPrompt';
+import type { TLanguage } from '@i18n/const';
+import { LLMError } from '@/shared/api/types';
 
 interface IUseGenerateGreetingResult {
   text: string;
@@ -18,6 +23,7 @@ export const useGenerateGreeting = (): IUseGenerateGreetingResult => {
   const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const { i18n } = useTranslation();
 
   const cancel = useCallback(() => {
     abortRef.current?.abort();
@@ -41,19 +47,21 @@ export const useGenerateGreeting = (): IUseGenerateGreetingResult => {
       setIsStreaming(true);
 
       try {
-        const prompt = buildPrompt(data);
+        const lang = i18n.language as TLanguage;
+        const prompt = buildPrompt(data, lang);
+        const systemPrompt = getSystemPrompt(lang);
+
         await llmClient.streamGreeting(
           prompt,
-          (chunk) => {
-            if (!chunk.done) {
-              setText((prev) => prev + chunk.text);
-            }
+          systemPrompt, // ⚠️ нужно передать и в Worker
+          chunk => {
+            if (!chunk.done) setText(prev => prev + chunk.text);
           },
           controller.signal,
         );
       } catch (err) {
         if (err instanceof Error && err.name === 'AbortError') {
-          return; // Отмена — не ошибка
+          return;
         }
         if (err instanceof LLMError) {
           setError(err.message);
@@ -65,7 +73,7 @@ export const useGenerateGreeting = (): IUseGenerateGreetingResult => {
         abortRef.current = null;
       }
     },
-    [cancel, reset],
+    [cancel, reset, i18n.language],
   );
 
   return { text, isStreaming, error, generate, cancel, reset };

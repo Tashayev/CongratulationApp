@@ -15,6 +15,12 @@ export const validateGreetingForm = (
 
   if (!data.event) {
     errors.event = t('errors.eventRequired');
+  } else if (data.event === 'other' && !data.eventCustom.trim()) {
+    errors.eventCustom = t('errors.eventCustomRequired');
+  }
+
+  if (!data.relation.trim()) {
+    errors.relation = t('errors.relationRequired');
   }
 
   if (data.age) {

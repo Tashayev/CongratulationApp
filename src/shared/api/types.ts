@@ -6,6 +6,7 @@ export interface IStreamChunk {
 export interface ILLMClient {
   streamGreeting(
     prompt: string,
+    systemPrompt: string,
     onChunk: (chunk: IStreamChunk) => void,
     signal?: AbortSignal,
   ): Promise<string>;

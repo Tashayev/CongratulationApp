@@ -6,20 +6,13 @@ export type TEventType =
   | 'graduation'
   | 'other';
 
-export type TRelationType =
-  | 'friend'
-  | 'colleague'
-  | 'family'
-  | 'relative'
-  | 'boss'
-  | 'other';
-
 export type TGender = 'male' | 'female' | 'unspecified';
 
 export interface IGreetingFormData {
   event: TEventType | null;
+  eventCustom: string;
   recipientName: string;
-  relation: TRelationType | null;
+  relation: string;
   age: string;
   gender: TGender;
   hasChildren: boolean;
@@ -33,8 +26,9 @@ export type TGreetingFormErrors = Partial<
 
 export const INITIAL_FORM_DATA: IGreetingFormData = {
   event: null,
+  eventCustom: '',
   recipientName: '',
-  relation: null,
+  relation: '',
   age: '',
   gender: 'unspecified',
   hasChildren: false,

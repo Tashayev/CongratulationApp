@@ -48,6 +48,8 @@ export default {
   result: {
     title: 'Сіздің құттықтауыңыз',
     empty: 'Құттықтау жасау үшін форманы толтырыңыз',
+    loading: 'Жасалуда...',
+    regenerate: 'Қайта жасау',
   },
   errors: {
     nameRequired: 'Атын енгізіңіз',

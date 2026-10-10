@@ -48,13 +48,15 @@ export default {
   result: {
     title: 'Your greeting',
     empty: 'Fill the form to generate a greeting',
+    loading: 'Generating...',
+    regenerate: 'Regenerate',
   },
   errors: {
     nameRequired: 'Please enter a name',
-  nameTooShort: 'Name is too short',
-  ageInvalid: 'Please enter a valid age',
-  eventRequired: 'Please select an event',
-  networkError: 'No connection',
-  aiError: 'Failed to generate. Please try again',
+    nameTooShort: 'Name is too short',
+    ageInvalid: 'Please enter a valid age',
+    eventRequired: 'Please select an event',
+    networkError: 'No connection',
+    aiError: 'Failed to generate. Please try again',
   },
 } as const;

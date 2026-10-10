@@ -48,6 +48,8 @@ export default {
   result: {
     title: 'Ваше поздравление',
     empty: 'Заполните форму, чтобы сгенерировать поздравление',
+    loading: 'Генерируем...',
+    regenerate: 'Сгенерировать ещё раз',
   },
   errors: {
     nameRequired: 'Введите имя',

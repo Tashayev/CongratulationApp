@@ -1,6 +1,8 @@
+import type { IGreetingFormData } from '@features/greeting-form/types';
+
 export type TRootStackParamList = {
   GreetingForm: undefined;
-  GreetingResult: { greeting: string };
+  GreetingResult: { formData: IGreetingFormData };
 };
 
 declare global {
